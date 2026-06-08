@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useSortable,
-} from "@dnd-kit/sortable";
-
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 interface Props {
@@ -28,10 +25,9 @@ export default function SortableImage({
   });
 
   const style = {
-    transform:
-      CSS.Transform.toString(
-        transform
-      ),
+    transform: CSS.Transform.toString(
+      transform
+    ),
     transition,
   };
 
@@ -39,55 +35,86 @@ export default function SortableImage({
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className="
-        relative
-        cursor-grab
-      "
+      className="relative"
     >
       <img
         src={image}
-        alt=""
+        alt={`Image ${index + 1}`}
         className="
           w-full
           h-32
           object-cover
           rounded-lg
           border
+          select-none
         "
       />
 
+      {/* Order Number */}
       <div
         className="
           absolute
           top-2
           left-2
-          bg-black
+          bg-black/80
           text-white
           px-2
           py-1
           rounded
           text-xs
+          z-10
         "
       >
         #{index + 1}
       </div>
 
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="
+          absolute
+          bottom-2
+          left-2
+          bg-black
+          text-white
+          px-3
+          py-1
+          rounded
+          text-xs
+          cursor-grab
+          active:cursor-grabbing
+          z-10
+          select-none
+        "
+      >
+        Drag
+      </div>
+
+      {/* Delete Button */}
       <button
         type="button"
-        onClick={() =>
-          onDelete(index)
-        }
+        onPointerDown={(e) => {
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(index);
+        }}
         className="
           absolute
           top-2
           right-2
           bg-red-600
+          hover:bg-red-700
           text-white
           w-8
           h-8
           rounded-full
+          flex
+          items-center
+          justify-center
+          z-20
         "
       >
         ×
