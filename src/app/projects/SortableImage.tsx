@@ -21,7 +21,7 @@ export default function SortableImage({
     transform,
     transition,
   } = useSortable({
-    id: image,
+    id: `${index}-${image}`,
   });
 
   const style = {
@@ -50,7 +50,7 @@ export default function SortableImage({
         "
       />
 
-      {/* Order Number */}
+      {/* Position Badge */}
       <div
         className="
           absolute

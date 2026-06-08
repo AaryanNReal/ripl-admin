@@ -54,10 +54,8 @@ const handleDragEnd = (
 ) => {
   if (!project) return;
 
-  const {
-    active,
-    over,
-  } = event;
+  const { active, over } =
+    event;
 
   if (
     !over ||
@@ -65,23 +63,24 @@ const handleDragEnd = (
   )
     return;
 
-  const oldIndex =
-    project.images.indexOf(
-      active.id
-    );
+  const oldIndex = parseInt(
+    String(active.id).split("-")[0]
+  );
 
-  const newIndex =
-    project.images.indexOf(
-      over.id
+  const newIndex = parseInt(
+    String(over.id).split("-")[0]
+  );
+
+  const reordered =
+    arrayMove(
+      project.images,
+      oldIndex,
+      newIndex
     );
 
   setProject({
     ...project,
-    images: arrayMove(
-      project.images,
-      oldIndex,
-      newIndex
-    ),
+    images: reordered,
   });
 };
 const [newPreviews, setNewPreviews] =
@@ -177,15 +176,13 @@ const removeNewImage = (
 };
 
 
-
-  const handleSave = async () => {
+const handleSave = async () => {
   if (!project) return;
 
   try {
     setSaving(true);
 
-    let uploadedUrls: string[] =
-      [];
+    let uploadedUrls: string[] = [];
 
     if (newImages.length > 0) {
       uploadedUrls =
@@ -194,15 +191,22 @@ const removeNewImage = (
         );
     }
 
+    const payload = {
+      ...project,
+      images: [
+        ...project.images,
+        ...uploadedUrls,
+      ],
+    };
+
+    console.log(
+      "SAVING ORDER:",
+      payload.images
+    );
+
     await updateProject(
       project.id,
-      {
-        ...project,
-        images: [
-          ...project.images,
-          ...uploadedUrls,
-        ],
-      }
+      payload
     );
 
     alert(
@@ -518,45 +522,38 @@ const removeNewImage = (
 
 
 
-          <div className="mt-8">
-
+   <div className="mt-8">
   <h3 className="text-xl font-semibold text-black mb-4">
     Gallery Images
   </h3>
 
   <DndContext
-  collisionDetection={
-    closestCenter
-  }
-  onDragEnd={
-    handleDragEnd
-  }
->
-  <SortableContext
-    items={project.images}
-    strategy={
-      rectSortingStrategy
-    }
+    collisionDetection={closestCenter}
+    onDragEnd={handleDragEnd}
   >
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {project.images.map(
-        (
-          image,
-          index
-        ) => (
-          <SortableImage
-            key={image}
-            image={image}
-            index={index}
-            onDelete={
-              removeExistingImage
-            }
-          />
-        )
+    <SortableContext
+      items={project.images.map(
+        (image, index) =>
+          `${index}-${image}`
       )}
-    </div>
-  </SortableContext>
-</DndContext>
+      strategy={rectSortingStrategy}
+    >
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {project.images.map(
+          (image, index) => (
+            <SortableImage
+              key={`${index}-${image}`}
+              image={image}
+              index={index}
+              onDelete={
+                removeExistingImage
+              }
+            />
+          )
+        )}
+      </div>
+    </SortableContext>
+  </DndContext>
 </div>
 
 <div className="mt-8 text-black">
