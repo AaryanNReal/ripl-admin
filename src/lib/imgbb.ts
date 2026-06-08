@@ -10,30 +10,56 @@ import { convertToWebP } from "./image";
 export const uploadToImgBB = async (
   file: File
 ): Promise<string> => {
-  const compressedFile =
-    await imageCompression(file, {
-      maxSizeMB: 0.4,
-      maxWidthOrHeight: 1600,
-      useWebWorker: true,
-      fileType: "image/webp",
-    });
+  try {
+    const compressedFile = await imageCompression(
+      file,
+      {
+        maxSizeMB: 0.4,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+        fileType: "image/webp",
+      }
+    );
 
-  const formData = new FormData();
+    const formData = new FormData();
 
-  formData.append(
-    "image",
-    compressedFile
-  );
+    formData.append(
+      "image",
+      compressedFile
+    );
 
-  const apiKey =
-    process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    const apiKey =
+      process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
-  const response = await axios.post(
-    `https://api.imgbb.com/1/upload?key=${apiKey}`,
-    formData
-  );
+    console.log(
+      "IMGBB API KEY:",
+      apiKey
+    );
 
-  return response.data.data.url;
+    if (!apiKey) {
+      throw new Error(
+        "NEXT_PUBLIC_IMGBB_API_KEY is undefined"
+      );
+    }
+
+    const response = await axios.post(
+      `https://api.imgbb.com/1/upload?key=${apiKey}`,
+      formData
+    );
+
+    console.log(
+      "ImgBB Upload Success:",
+      response.data
+    );
+
+    return response.data.data.url;
+  } catch (error) {
+    console.error(
+      "ImgBB Upload Error:",
+      error
+    );
+    throw error;
+  }
 };
 
 /* =========================
