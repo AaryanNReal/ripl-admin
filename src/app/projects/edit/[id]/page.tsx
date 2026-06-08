@@ -1,11 +1,23 @@
 "use client";
-
+import SortableImage from "../../SortableImage";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { uploadMultipleToImgBB } from "@/lib/imgbb";
 import Link from "next/link";
 import AdminLayout from "@/components/AdminLayout";
+import {
+  DndContext,
+  closestCenter,
+} from "@dnd-kit/core";
 
+import {
+  SortableContext,
+  rectSortingStrategy,
+  arrayMove,
+  useSortable,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
 import {
   getProjects,
   updateProject,
@@ -37,7 +49,41 @@ export default function EditProjectPage() {
     useState<Category[]>([]);
 const [newImages, setNewImages] =
   useState<File[]>([]);
+const handleDragEnd = (
+  event: any
+) => {
+  if (!project) return;
 
+  const {
+    active,
+    over,
+  } = event;
+
+  if (
+    !over ||
+    active.id === over.id
+  )
+    return;
+
+  const oldIndex =
+    project.images.indexOf(
+      active.id
+    );
+
+  const newIndex =
+    project.images.indexOf(
+      over.id
+    );
+
+  setProject({
+    ...project,
+    images: arrayMove(
+      project.images,
+      oldIndex,
+      newIndex
+    ),
+  });
+};
 const [newPreviews, setNewPreviews] =
   useState<string[]>([]);
   useEffect(() => {
@@ -478,52 +524,39 @@ const removeNewImage = (
     Gallery Images
   </h3>
 
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
-    {project.images.map(
-      (image, index) => (
-        <div
-          key={index}
-          className="relative"
-        >
-          <img
-            src={image}
-            alt=""
-            className="
-              w-full
-              h-32
-              object-cover
-              rounded-lg
-              border
-            "
-          />
-
-          <button
-            type="button"
-            onClick={() =>
-              removeExistingImage(
-                index
-              )
+  <DndContext
+  collisionDetection={
+    closestCenter
+  }
+  onDragEnd={
+    handleDragEnd
+  }
+>
+  <SortableContext
+    items={project.images}
+    strategy={
+      rectSortingStrategy
+    }
+  >
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {project.images.map(
+        (
+          image,
+          index
+        ) => (
+          <SortableImage
+            key={image}
+            image={image}
+            index={index}
+            onDelete={
+              removeExistingImage
             }
-            className="
-              absolute
-              top-2
-              right-2
-              bg-red-600
-              text-white
-              w-8
-              h-8
-              rounded-full
-            "
-          >
-            ×
-          </button>
-        </div>
-      )
-    )}
-
-  </div>
-
+          />
+        )
+      )}
+    </div>
+  </SortableContext>
+</DndContext>
 </div>
 
 <div className="mt-8 text-black">
